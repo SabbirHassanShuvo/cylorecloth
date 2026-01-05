@@ -2,23 +2,54 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Crypt;
-use App\Http\Controllers\Controller;
-use App\Mail\AccoutBlock;
-use App\Mail\ResetPasswordMail;
-use App\Models\ResetPassword;
 use App\Models\User;
+use Inertia\Inertia;
+use App\Mail\AccoutBlock;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
+use App\Models\ResetPassword;
+use App\Mail\ResetPasswordMail;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\RateLimiter;
 
-class LoginController extends Controller
+class AuthController extends Controller
 {
     public function show()
+    {
+        return Inertia::render('frontend/Register');
+    }
+    public function store(Request $request)
+    {
+        // Validation rules
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string|min:11|max:11|unique:users,phone',
+            'password' => 'required|min:6',
+        ]);
+
+        // User Model
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->password = Hash::make($request->password);
+        $user->role = 'customer'; // Default role set
+        $user->save();
+
+        // Send Welcome Email
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
+        return redirect()->back()->with('flash', [
+            'success' => 'Register successfully!',
+        ]);
+    }
+
+    public function loginshow()
     {
         return Inertia::render('frontend/Login');
     }

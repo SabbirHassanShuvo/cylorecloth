@@ -1,14 +1,13 @@
 <?php
 
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\AccountController;
-use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterUserController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 
 Route::get('/', function () {
     return Inertia::render('frontend/Home');
@@ -24,33 +23,29 @@ Route::get('/shop', function () {
 })->name('home');
 
 // Auth router 
-Route::get('/register', [RegisterUserController::class, 'show'])->name('register');
-Route::post('/register', [RegisterUserController::class, 'store']);
-Route::get('/login', [LoginController::class, 'show'])->name('login');
-Route::post('/login', [LoginController::class, 'authtication']);
-Route::get('/forgetpassword', [LoginController::class, 'forgetshow'])->name('forgetpassword');
-Route::post('/forgetpassword', [LoginController::class, 'forgetpassword']);
-Route::get('/resetpassword/{token}', [LoginController::class, 'resetshow'])->name('resetpassword');
-Route::post('/resetpassword/{token}', [LoginController::class, 'resetpassword']);
+Route::get('/register', [AuthController::class, 'show'])->name('register');
+Route::post('/register', [AuthController::class, 'store']);
+Route::get('/login', [AuthController::class, 'loginshow'])->name('login');
+Route::post('/login', [AuthController::class, 'authtication']);
+Route::get('/forgetpassword', [AuthController::class, 'forgetshow'])->name('forgetpassword');
+Route::post('/forgetpassword', [AuthController::class, 'forgetpassword']);
+Route::get('/resetpassword/{token}', [AuthController::class, 'resetshow'])->name('resetpassword');
+Route::post('/resetpassword/{token}', [AuthController::class, 'resetpassword']);
 Route::middleware(['auth'])->group(function () {
     // Your authenticated routes here
     Route::get('/dashboard', function () {
         return Inertia::render('backend/CreateUser');
     })->name('dashboard');
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    // // Order routes
-    // Route::get('/order', [OrderController::class, 'index'])->name('order.index');
-    // Route::get('/order/{id}', [OrderController::class, 'show'])->name('order.show');
-    // Route::post('/order/update/{id}', [OrderController::class, 'update'])->name('order.update');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
-Route::middleware(['auth', 'admin'])->group(function () {
+// Route::middleware(['auth', 'admin'])->group(function () {
     // User Routes
     Route::get('/user/delete/{id}', [AdminUserController::class, 'destroy'])->name('user.delete');
 
     // Product routes
     Route::get('/product/delete/{id}', [ProductController::class, 'destroy'])->name('post.delete');
-});
-Route::middleware(['auth', 'manager'])->group(function () {
+// });
+// Route::middleware(['auth', 'manager'])->group(function () {
     // User routes
     Route::get('/user', [AdminUserController::class, 'index'])->name('user');
     Route::get('/user/create', [AdminUserController::class, 'create'])->name('user.create');
@@ -86,4 +81,4 @@ Route::middleware(['auth', 'manager'])->group(function () {
     Route::post('/account/update/{id}', [AccountController::class, 'update'])->name('account.update');
     Route::post('/profile/uploadphoto', [AccountController::class, 'uploadPhoto'])->name('account.uploadphoto');
     Route::post('/account/changepassword', [AccountController::class, 'changepassword'])->name('account.changepassword');
-});
+// });
