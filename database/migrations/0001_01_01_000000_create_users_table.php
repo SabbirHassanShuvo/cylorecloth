@@ -11,18 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('password');
-            $table->tinyInteger('status')->default(1);
-            $table->enum('role', ['admin', 'manager', 'customer'])->default('customer'); // Role field
-            $table->rememberToken();
-            $table->timestamps();
-        });
+            Schema::create('users', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+
+                // Email OTP
+                $table->string('email_otp')->nullable();
+                $table->timestamp('email_otp_expires_at')->nullable();
+                $table->timestamp('email_verified_at')->nullable();
+
+                // Phone OTP
+                $table->string('phone')->nullable()->unique();
+                $table->string('phone_otp')->nullable();
+                $table->timestamp('phone_otp_expires_at')->nullable();
+                $table->timestamp('phone_verified_at')->nullable();
+
+                $table->string('password');
+                $table->tinyInteger('status')->default(1);
+                $table->enum('role', ['admin', 'manager', 'customer'])->default('customer');
+
+                $table->rememberToken();
+                $table->timestamps();
+                $table->softDeletes(); // soft delete
+            });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

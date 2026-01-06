@@ -24,24 +24,27 @@ class AuthController extends Controller
     }
     public function store(Request $request)
     {
-        // Validation rules
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string|min:11|max:11|unique:users,phone',
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'phone'    => 'nullable|string|size:11|unique:users,phone',
             'password' => 'required|min:6',
         ]);
 
-        // User Model
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $user = new User();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->password = Hash::make($request->password);
-        $user->role = 'customer'; // Default role set
+        $user->role = 'customer';
         $user->save();
 
-        // Send Welcome Email
         Mail::to($user->email)->send(new WelcomeMail($user));
 
         return redirect()->back()->with('flash', [
