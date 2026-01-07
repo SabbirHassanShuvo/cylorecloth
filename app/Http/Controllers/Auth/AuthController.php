@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Inertia\Inertia;
+use App\Mail\OtpMail;
 use App\Mail\AccoutBlock;
 use App\Mail\WelcomeMail;
+use App\Helpers\OtpHelper;
 use Illuminate\Http\Request;
 use App\Models\ResetPassword;
 use App\Mail\ResetPasswordMail;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
@@ -37,21 +41,29 @@ class AuthController extends Controller
                 ->withInput();
         }
 
+        $otp = OtpHelper::generate();
+
         $user = new User();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->password = Hash::make($request->password);
         $user->role = 'customer';
+        $user->email_otp = $otp;
+        $user->email_otp_expires_at = Carbon::now()->addMinutes(5);
         $user->save();
 
-        Mail::to($user->email)->send(new WelcomeMail($user));
+        Mail::to($user->email)->send(new OtpMail($otp));
 
-        return redirect()->back()->with('flash', [
-            'success' => 'Register successfully!',
-        ]);
+        return redirect()
+            ->route('otp.verify.form')
+            ->with('success', 'OTP sent to your email');
     }
-
+    public function otpVerifyForm()
+    {
+        return Inertia::render('frontend/OtpVerify');
+    }
+    // Login User
     public function loginshow()
     {
         return Inertia::render('frontend/Login');

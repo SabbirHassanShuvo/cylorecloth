@@ -24,7 +24,9 @@ Route::get('/shop', function () {
 
 // Auth router 
 Route::get('/register', [AuthController::class, 'show'])->name('register');
-Route::post('/register', [AuthController::class, 'store']);
+Route::post('/register', [AuthController::class, 'store'])->name('register.store');
+Route::get('/otp/verify', [AuthController::class, 'otpVerifyForm'])->name('otp.verify.form');
+Route::post('/otp/verify', [AuthController::class, 'otpVerify'])->name('otp.verify');
 Route::get('/login', [AuthController::class, 'loginshow'])->name('login');
 Route::post('/login', [AuthController::class, 'authtication']);
 Route::get('/forgetpassword', [AuthController::class, 'forgetshow'])->name('forgetpassword');
