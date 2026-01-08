@@ -37,7 +37,7 @@ class OtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.emails.emailotpVerification',
+            view: 'views.emails.emailotpVerification',
         );
     }
 

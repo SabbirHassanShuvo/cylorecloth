@@ -50,14 +50,20 @@ const Register = () => {
         mode: "onChange", // Realtime validation
     });
 
+    const csrfToken = document.head.querySelector('meta[name="csrf-token"]').content;
+
     const onSubmit = (data) => {
         setIsSubmitting(true);
 
-        router.post(route("register.store"), data, {
+        router.post(route('register.store'), data, {
             preserveScroll: true,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken, // <-- CSRF token include
+            },
             onFinish: () => setIsSubmitting(false),
         });
     };
+
 
 
     return (
