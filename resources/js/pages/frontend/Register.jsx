@@ -58,14 +58,15 @@ const Register = () => {
             preserveScroll: true,
             onFinish: () => setIsSubmitting(false),
             onError: (errors) => {
+                if (errors.name) toast.error(errors.name);
                 if (errors.email) toast.error(errors.email);
                 if (errors.phone) toast.error(errors.phone);
+                if (errors.password) toast.error(errors.password);
             },
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            }
         });
     };
+
+
 
     return (
         <>
