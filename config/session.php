@@ -214,6 +214,4 @@ return [
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
 
-    'same_site' => 'lax',
-
 ];

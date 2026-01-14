@@ -1,44 +1,28 @@
 import Header from '../../common/Header';
 import Footer from "../../common/Footer";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { Link, router, usePage } from "@inertiajs/react";
-import { motion } from 'framer-motion';
-import { route } from "ziggy-js";
-import { toast } from "react-toastify";
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useRegisterUserMutation } from "../../redux/api/authApi";
+import { motion } from 'framer-motion';
+import { Link } from "@inertiajs/react";
 
 const schema = Yup.object().shape({
     name: Yup.string().required("Full Name is required"),
-    email: Yup.string()
-        .email("Enter a valid email")
-        .required("Email is required"),
-    phone: Yup.string()
-        .matches(/^01[3-9]\d{8}$/, "Invalid phone number")
-        .required("Phone number is required"),
-    password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
-    confirmPassword: Yup.string()
-        .oneOf([Yup.ref("password"), null], "Passwords must match")
-        .required("Confirm Password is required"),
+    email: Yup.string().email("Enter a valid email").required("Email is required"),
+    phone: Yup.string().matches(/^01[3-9]\d{8}$/, "Invalid phone number").required("Phone number is required"),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+    confirmPassword: Yup.string().oneOf([Yup.ref("password"), null], "Passwords must match").required("Confirm Password is required"),
 });
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { error } = usePage().props;
-
-    useEffect(() => {
-        if (error) {
-            toast.error(error); // Toast error 
-        }
-    }, [error]);
+    const [registerUser, { isLoading }] = useRegisterUserMutation();
 
     const {
         register,
@@ -47,25 +31,29 @@ const Register = () => {
         reset,
     } = useForm({
         resolver: yupResolver(schema),
-        mode: "onChange", // Realtime validation
+        mode: "onChange",
     });
 
+    const onSubmit = async (data) => {
+        console.log("Form Data Submitted:", data); // Debug submitted form
 
-    const onSubmit = (data) => {
-        setIsSubmitting(true);
+        const { confirmPassword, ...formData } = data;
+        console.log("Data sent to API:", formData); // Debug API payload
 
-        router.post(route('register.store'), data, {
-            preserveScroll: true,
-            onFinish: () => setIsSubmitting(false),
-            onError: (errors) => {
-                if (errors.name) toast.error(errors.name);
-                if (errors.email) toast.error(errors.email);
-                if (errors.phone) toast.error(errors.phone);
-                if (errors.password) toast.error(errors.password);
-            },
-        });
+        try {
+            const response = await registerUser(formData).unwrap();
+            console.log("API Response:", response); // Debug API response
+            toast.success("Registration successful! Please verify your email.");
+            reset();
+        } catch (err) {
+            console.error("API Error:", err); // Debug error object
+            if (err?.data) {
+                Object.values(err.data).forEach((msg) => toast.error(msg));
+            } else {
+                toast.error("Something went wrong!");
+            }
+        }
     };
-
 
 
     return (
@@ -266,10 +254,10 @@ const Register = () => {
                                 <div className="mb-6">
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting}
-                                        className={`w-full bg-gradient-to-r from-gray-800 to-black text-white font-bold py-3 px-4 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                        disabled={isLoading}
+                                        className={`w-full bg-gradient-to-r from-gray-800 to-black text-white font-bold py-3 px-4 rounded-lg hover:from-gray-900 hover:to-gray-800 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                                     >
-                                        {isSubmitting ? (
+                                        {isLoading ? (
                                             <span className="flex items-center justify-center">
                                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -298,4 +286,5 @@ const Register = () => {
         </>
     );
 };
+
 export default Register;

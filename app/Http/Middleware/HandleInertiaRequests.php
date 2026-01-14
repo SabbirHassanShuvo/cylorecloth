@@ -46,18 +46,15 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'csrf_token' => csrf_token(),
+            'flash' => [
+                'success' => session('flash.success'),
+                'error' => session('flash.error'),
+            ],
             'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ]
         ];
-
-        return array_merge(parent::share($request), [
-             'csrf_token' => csrf_token(),
-            'flash' => [
-                'success' => session('success'),
-                'error' => session('error'),
-            ],
-        ]);
     }
 }
