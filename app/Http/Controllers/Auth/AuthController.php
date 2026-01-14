@@ -29,37 +29,45 @@ class AuthController extends Controller
     }
     
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name'     => 'required|string|max:255',
-        'email'    => 'required|email|unique:users,email',
-        'phone'    => 'required|string|size:11|unique:users,phone',
-        'password' => 'required|min:6',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'phone'    => 'required|string|size:11|unique:users,phone',
+            'password' => 'required|min:6',
+        ]);
 
-    if ($validator->fails()) {
-        // Throw Inertia-compatible validation exception
-        throw ValidationException::withMessages(
-            $validator->errors()->toArray()
-        );
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $otp = OtpHelper::generate();
+
+        // Object-based insert
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->password = Hash::make($request->password);
+        $user->role = 'customer';
+        $user->email_otp = $otp;
+        $user->email_otp_expires_at = Carbon::now()->addMinutes(5);
+        $user->save();
+
+        Mail::to($user->email)->send(new OtpMail($otp));
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Registration successful. OTP sent to email.',
+            'data' => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ],
+        ], 201);
     }
-
-    $otp = OtpHelper::generate();
-
-    $user = User::create([
-        'name'                   => $request->name,
-        'email'                  => $request->email,
-        'phone'                  => $request->phone,
-        'password'               => Hash::make($request->password),
-        'role'                   => 'customer',
-        'email_otp'              => $otp,
-        'email_otp_expires_at'   => Carbon::now()->addMinutes(5),
-    ]);
-
-    Mail::to($user->email)->send(new OtpMail($otp));
-
-    return redirect()->route('otp.verify.form');
-}
 
 
 

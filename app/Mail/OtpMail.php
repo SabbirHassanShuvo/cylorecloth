@@ -13,6 +13,8 @@ class OtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $otp;
+
     /**
      * Create a new message instance.
      */
@@ -37,7 +39,11 @@ class OtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'views.emails.emailotpVerification',
+            // view path is relative to resources/views, no 'views.' prefix
+            view: 'emails.emailotpVerification',
+            with: [
+                'otp' => $this->otp,
+            ],
         );
     }
 

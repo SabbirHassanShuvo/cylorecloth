@@ -9,7 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRegisterUserMutation } from "../../redux/api/authApi";
 import { motion } from 'framer-motion';
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 
 const schema = Yup.object().shape({
     name: Yup.string().required("Full Name is required"),
@@ -35,27 +35,28 @@ const Register = () => {
     });
 
     const onSubmit = async (data) => {
-        console.log("Form Data Submitted:", data); // Debug submitted form
-
         const { confirmPassword, ...formData } = data;
-        console.log("Data sent to API:", formData); // Debug API payload
 
         try {
-            const response = await registerUser(formData).unwrap();
-            console.log("API Response:", response); // Debug API response
-            toast.success("Registration successful! Please verify your email.");
-            reset();
+            const res = await registerUser(formData).unwrap();
+
+            toast.success(res.message || "Registration successful");
+
+            // Redirect to OTP verify page
+            router.visit('/otp/verify');
+
         } catch (err) {
-            console.error("API Error:", err); // Debug error object
-            if (err?.data) {
-                Object.values(err.data).forEach((msg) => toast.error(msg));
+            console.error("API Error:", err);
+
+            if (err?.data?.errors) {
+                Object.values(err.data.errors).flat().forEach(msg =>
+                    toast.error(msg)
+                );
             } else {
-                toast.error("Something went wrong!");
+                toast.error("Registration failed");
             }
         }
     };
-
-
     return (
         <>
             <ToastContainer />
