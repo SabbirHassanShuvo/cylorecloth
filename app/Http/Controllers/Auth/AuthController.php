@@ -69,12 +69,12 @@ class AuthController extends Controller
         ], 201);
     }
 
-
-
     public function otpVerifyForm()
     {
         return Inertia::render('frontend/OtpVerify');
     }
+
+    public function otpVerify(Request $request){}
     // Login User
     public function loginshow()
     {
