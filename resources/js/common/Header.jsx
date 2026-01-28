@@ -1,10 +1,13 @@
 import { Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { FaBars, FaRegHeart, FaShoppingCart, FaMoon, FaSun } from 'react-icons/fa';
+import { FaBars, FaRegHeart, FaShoppingCart } from 'react-icons/fa';
 import { IoIosSearch, IoMdPerson, IoMdClose } from 'react-icons/io';
 import { MdHomeFilled, MdKeyboardArrowDown } from 'react-icons/md';
+import { HiSparkles } from 'react-icons/hi';
+import { RiRobot2Fill } from 'react-icons/ri';
 import Logo from '../assets/image/logo.jpg';
+import AITryOnModal from '../common/AITryOnModal';
 
 const Header = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -12,7 +15,7 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [activeCategory, setActiveCategory] = useState('');
-    const [isDark, setIsDark] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const timeoutRef = useRef(null);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -94,14 +97,6 @@ const Header = () => {
         };
     }, [isMenuOpen]);
 
-    // Theme classes
-    const bgPrimary = isDark ? 'bg-slate-900' : 'bg-white';
-    const bgSecondary = isDark ? 'bg-slate-800' : 'bg-gray-50';
-    const textPrimary = isDark ? 'text-white' : 'text-gray-900';
-    const textSecondary = isDark ? 'text-gray-300' : 'text-gray-600';
-    const border = isDark ? 'border-slate-700' : 'border-gray-200';
-    const hoverBg = isDark ? 'hover:bg-slate-700' : 'hover:bg-gray-100';
-
     return (
         <>
             {/* Top Banner */}
@@ -113,7 +108,7 @@ const Header = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                     >
-                        <div className={`py-2.5 text-center ${isDark ? 'bg-slate-800' : 'bg-slate-900'}`}>
+                        <div className="bg-slate-900 py-2.5 text-center">
                             <motion.p
                                 animate={{ opacity: [1, 0.8, 1] }}
                                 transition={{ duration: 3, repeat: Infinity }}
@@ -123,12 +118,12 @@ const Header = () => {
                             </motion.p>
                         </div>
 
-                        <div className={`${border} ${bgPrimary} border-b`}>
+                        <div className="border-b border-gray-200 bg-white">
                             <div className="container mx-auto flex flex-wrap items-center justify-between px-4 py-2.5">
                                 <motion.h5
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className={`text-xs font-medium sm:text-sm ${textSecondary}`}
+                                    className="text-xs font-medium text-gray-600 sm:text-sm"
                                 >
                                     Welcome to Cylore Luxury House
                                 </motion.h5>
@@ -139,7 +134,7 @@ const Header = () => {
                                     className="mt-2 flex flex-wrap items-center justify-center gap-4 text-xs sm:mt-0 sm:justify-end sm:text-sm"
                                 >
                                     <motion.div whileHover={{ y: -1 }}>
-                                        <Link href="login" className={`font-medium transition-colors ${textSecondary} ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}>
+                                        <Link href="login" className="font-medium text-gray-600 transition-colors hover:text-gray-900">
                                             Log In
                                         </Link>
                                     </motion.div>
@@ -148,7 +143,7 @@ const Header = () => {
                                             key={item}
                                             href="#"
                                             whileHover={{ y: -1 }}
-                                            className={`font-medium transition-colors ${textSecondary} ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}
+                                            className="font-medium text-gray-600 transition-colors hover:text-gray-900"
                                         >
                                             {item}
                                         </motion.a>
@@ -163,14 +158,12 @@ const Header = () => {
             {/* Main Header */}
             <motion.div
                 animate={{
-                    backgroundColor: isDark ?
-                        (isScrolled ? 'rgba(15, 23, 42, 0.98)' : 'rgba(15, 23, 42, 1)') :
-                        (isScrolled ? 'rgba(255, 255, 255, 0.98)' : 'rgba(255, 255, 255, 1)'),
+                    backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.98)' : 'rgba(255, 255, 255, 1)',
                     boxShadow: isScrolled
                         ? '0 4px 20px rgba(0, 0, 0, 0.15)'
                         : '0 1px 3px rgba(0, 0, 0, 0.1)'
                 }}
-                className={`w-full ${border} border-b transition-all duration-300 ${isScrolled ? 'fixed left-0 top-0 z-50 backdrop-blur-md' : 'relative'
+                className={`w-full border-b border-gray-200 transition-all duration-300 ${isScrolled ? 'fixed left-0 top-0 z-50 backdrop-blur-md' : 'relative'
                     }`}
             >
                 <div className="container mx-auto px-4">
@@ -180,7 +173,7 @@ const Header = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsMenuOpen(true)}
-                            className={`rounded-lg p-2 transition-colors md:hidden ${textPrimary} ${hoverBg}`}
+                            className="rounded-lg p-2 text-gray-900 transition-colors hover:bg-gray-100 md:hidden"
                         >
                             <FaBars className="text-xl" />
                         </motion.button>
@@ -192,23 +185,59 @@ const Header = () => {
                             </Link>
                         </motion.div>
 
-                        {/* Mobile Search */}
+                        {/* Mobile Actions */}
                         <div className="flex items-center space-x-2 md:hidden">
-                            {/* Dark Mode Toggle */}
+                            {/* AI Button - Mobile */}
                             <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setIsDark(!isDark)}
-                                className={`rounded-lg p-2 transition-colors ${textPrimary} ${hoverBg}`}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsAIModalOpen(true)}
+                                className="relative overflow-hidden rounded-full px-3 py-2 font-bold text-white shadow-lg"
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                }}
                             >
-                                {isDark ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+                                <motion.div
+                                    className="absolute inset-0"
+                                    animate={{
+                                        background: [
+                                            'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                            'linear-gradient(135deg, #f093fb 0%, #667eea 50%, #764ba2 100%)',
+                                            'linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%)',
+                                            'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                        ],
+                                    }}
+                                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                />
+
+                                <motion.div
+                                    className="relative flex items-center space-x-1"
+                                    animate={{ y: [0, -2, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                    <HiSparkles className="text-base" />
+                                    <span className="text-xs font-bold">AI</span>
+                                </motion.div>
+
+                                <motion.div
+                                    className="absolute inset-0 rounded-full"
+                                    animate={{
+                                        boxShadow: [
+                                            '0 0 20px rgba(102, 126, 234, 0.6)',
+                                            '0 0 30px rgba(240, 147, 251, 0.8)',
+                                            '0 0 20px rgba(118, 75, 162, 0.6)',
+                                            '0 0 20px rgba(102, 126, 234, 0.6)',
+                                        ],
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                />
                             </motion.button>
 
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                                className={`rounded-lg p-2 transition-colors ${textPrimary} ${hoverBg}`}
+                                className="rounded-lg p-2 text-gray-900 transition-colors hover:bg-gray-100"
                             >
                                 {isSearchOpen ? <IoMdClose className="text-xl" /> : <IoIosSearch className="text-xl" />}
                             </motion.button>
@@ -220,13 +249,12 @@ const Header = () => {
                                 <input
                                     type="text"
                                     placeholder="Search for products, brands and more..."
-                                    className={`w-full rounded-lg ${border} border py-2.5 pl-4 pr-12 text-sm outline-none transition-all ${isDark ? 'bg-slate-800 text-white placeholder-gray-400 focus:bg-slate-700' : 'bg-gray-50 text-gray-900 focus:bg-white'
-                                        } focus:border-gray-400 focus:shadow-md`}
+                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-sm text-gray-900 outline-none transition-all focus:border-gray-400 focus:bg-white focus:shadow-md"
                                 />
                                 <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
-                                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${textSecondary}`}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
                                 >
                                     <IoIosSearch className="text-xl" />
                                 </motion.button>
@@ -235,25 +263,112 @@ const Header = () => {
 
                         {/* Desktop Actions */}
                         <div className="hidden items-center space-x-6 md:flex">
-                            {/* Dark Mode Toggle */}
+                            {/* AI Button - Desktop */}
                             <motion.button
-                                whileHover={{ scale: 1.1, rotate: 360 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setIsDark(!isDark)}
-                                className={`rounded-full p-2 transition-colors ${isDark ? 'bg-slate-700 text-yellow-400' : 'bg-gray-100 text-gray-700'}`}
+                                whileHover={{ scale: 1.08, y: -2 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsAIModalOpen(true)}
+                                className="group relative overflow-hidden rounded-2xl px-6 py-3 font-bold text-white shadow-xl transition-all duration-300"
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                }}
                             >
-                                {isDark ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+                                {/* Animated gradient background */}
+                                <motion.div
+                                    className="absolute inset-0"
+                                    animate={{
+                                        background: [
+                                            'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                            'linear-gradient(135deg, #f093fb 0%, #667eea 50%, #764ba2 100%)',
+                                            'linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%)',
+                                            'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                        ],
+                                    }}
+                                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                                />
+
+                                {/* Shimmer effect */}
+                                <motion.div
+                                    className="absolute inset-0"
+                                    animate={{
+                                        background: [
+                                            'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+                                        ],
+                                        x: ['-200%', '200%'],
+                                    }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                />
+
+                                {/* Button content */}
+                                <motion.div
+                                    className="relative flex items-center space-x-2"
+                                    animate={{ y: [0, -2, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                    <motion.div
+                                        animate={{ rotate: [0, 360] }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                    >
+                                        <HiSparkles className="text-xl" />
+                                    </motion.div>
+                                    <span className="text-sm font-bold tracking-wide">Try-On AI</span>
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                            rotate: [0, 10, -10, 0]
+                                        }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    >
+                                        <RiRobot2Fill className="text-xl" />
+                                    </motion.div>
+                                </motion.div>
+
+                                {/* Outer glow */}
+                                <motion.div
+                                    className="absolute inset-0 rounded-2xl"
+                                    animate={{
+                                        boxShadow: [
+                                            '0 0 20px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4)',
+                                            '0 0 30px rgba(240, 147, 251, 0.8), 0 0 60px rgba(240, 147, 251, 0.5)',
+                                            '0 0 20px rgba(118, 75, 162, 0.6), 0 0 40px rgba(118, 75, 162, 0.4)',
+                                            '0 0 20px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4)',
+                                        ],
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                />
+
+                                {/* Particles effect */}
+                                {[...Array(3)].map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="absolute h-1 w-1 rounded-full bg-white"
+                                        style={{
+                                            left: `${20 + i * 30}%`,
+                                            top: '50%',
+                                        }}
+                                        animate={{
+                                            y: [-20, -40, -20],
+                                            opacity: [0, 1, 0],
+                                            scale: [0, 1, 0],
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            delay: i * 0.3,
+                                        }}
+                                    />
+                                ))}
                             </motion.button>
 
                             {/* Profile */}
                             <motion.div whileHover={{ y: -2 }}>
-                                <a href="#" className={`group flex items-center space-x-2 rounded-lg ${border} border ${bgPrimary} px-3 py-2 shadow-sm transition-all hover:shadow-md`}>
-                                    <div className={`relative h-9 w-9 overflow-hidden rounded-full ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                                <a href="#" className="group flex items-center space-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm transition-all hover:shadow-md">
+                                    <div className="relative h-9 w-9 overflow-hidden rounded-full bg-gray-200">
                                         <img src={Logo} alt="Profile" className="h-full w-full object-cover" />
                                     </div>
                                     <div className="text-left">
-                                        <p className={`text-xs ${textSecondary}`}>Hello,</p>
-                                        <p className={`text-sm font-semibold ${textPrimary}`}>Md Sabbir</p>
+                                        <p className="text-xs text-gray-600">Hello,</p>
+                                        <p className="text-sm font-semibold text-gray-900">Md Sabbir</p>
                                     </div>
                                 </a>
                             </motion.div>
@@ -262,7 +377,7 @@ const Header = () => {
                             <motion.div whileHover={{ y: -2 }} className="relative">
                                 <motion.a href="#" whileHover={{ scale: 1.05 }} className="flex flex-col items-center">
                                     <div className="relative">
-                                        <FaRegHeart className={`text-2xl ${textPrimary}`} />
+                                        <FaRegHeart className="text-2xl text-gray-900" />
                                         <motion.span
                                             animate={{ scale: [1, 1.1, 1] }}
                                             transition={{ repeat: Infinity, duration: 2 }}
@@ -271,7 +386,7 @@ const Header = () => {
                                             0
                                         </motion.span>
                                     </div>
-                                    <span className={`mt-0.5 text-xs font-medium ${textSecondary}`}>Wishlist</span>
+                                    <span className="mt-0.5 text-xs font-medium text-gray-600">Wishlist</span>
                                 </motion.a>
                             </motion.div>
 
@@ -279,16 +394,16 @@ const Header = () => {
                             <motion.div whileHover={{ y: -2 }} className="relative">
                                 <motion.a href="#" whileHover={{ scale: 1.05 }} className="flex flex-col items-center">
                                     <div className="relative">
-                                        <FaShoppingCart className={`text-2xl ${textPrimary}`} />
+                                        <FaShoppingCart className="text-2xl text-gray-900" />
                                         <motion.span
                                             animate={{ scale: [1, 1.1, 1] }}
                                             transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
-                                            className={`absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium text-white shadow-lg ${isDark ? 'bg-slate-600' : 'bg-slate-800'}`}
+                                            className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-slate-800 text-[10px] font-medium text-white shadow-lg"
                                         >
                                             0
                                         </motion.span>
                                     </div>
-                                    <span className={`mt-0.5 text-xs font-medium ${textSecondary}`}>Cart</span>
+                                    <span className="mt-0.5 text-xs font-medium text-gray-600">Cart</span>
                                 </motion.a>
                             </motion.div>
                         </div>
@@ -302,18 +417,17 @@ const Header = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className={`${border} ${bgPrimary} border-t md:hidden`}
+                            className="border-t border-gray-200 bg-white md:hidden"
                         >
                             <div className="container mx-auto px-4 py-4">
                                 <div className="relative">
                                     <input
                                         type="text"
                                         placeholder="Search products..."
-                                        className={`w-full rounded-lg ${border} border py-3 pl-4 pr-12 text-sm outline-none ${isDark ? 'bg-slate-800 text-white placeholder-gray-400' : 'bg-gray-50 text-gray-900'
-                                            }`}
+                                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-3 pl-4 pr-12 text-sm text-gray-900 outline-none"
                                         autoFocus
                                     />
-                                    <IoIosSearch className={`absolute right-4 top-1/2 -translate-y-1/2 text-xl ${textSecondary}`} />
+                                    <IoIosSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600" />
                                 </div>
                             </div>
                         </motion.div>
@@ -321,7 +435,7 @@ const Header = () => {
                 </AnimatePresence>
 
                 {/* Desktop Navigation */}
-                <nav className={`hidden ${border} ${bgPrimary} border-t md:block`}>
+                <nav className="hidden border-t border-gray-200 bg-white md:block">
                     <div className="container mx-auto" onMouseLeave={handleMouseLeave}>
                         <div className="flex items-center justify-center space-x-8 py-3">
                             {categories.map((cat, idx) => (
@@ -336,13 +450,13 @@ const Header = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    className={`group relative px-2 py-2 text-sm font-semibold transition-colors ${textPrimary}`}
+                                    className="group relative px-2 py-2 text-sm font-semibold text-gray-900 transition-colors"
                                 >
                                     {cat}
                                     {activeCategory === cat && isOpen && (
                                         <motion.div
                                             layoutId="activeNav"
-                                            className={`absolute -bottom-3 left-0 right-0 h-0.5 ${isDark ? 'bg-white' : 'bg-slate-900'}`}
+                                            className="absolute -bottom-3 left-0 right-0 h-0.5 bg-slate-900"
                                         />
                                     )}
                                 </motion.a>
@@ -357,7 +471,7 @@ const Header = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.2 }}
-                                    className={`absolute left-0 top-full z-50 w-full ${border} ${bgPrimary} border-t shadow-xl`}
+                                    className="absolute left-0 top-full z-50 w-full border-t border-gray-200 bg-white shadow-xl"
                                     onMouseEnter={handleMouseEnter}
                                     onMouseLeave={handleMouseLeave}
                                 >
@@ -370,7 +484,7 @@ const Header = () => {
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: idx * 0.05 }}
                                                 >
-                                                    <h3 className={`mb-3 text-sm font-bold uppercase tracking-wide ${textPrimary}`}>
+                                                    <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-900">
                                                         {title}
                                                     </h3>
                                                     <ul className="space-y-2">
@@ -379,7 +493,7 @@ const Header = () => {
                                                                 <motion.a
                                                                     href="#"
                                                                     whileHover={{ x: 4 }}
-                                                                    className={`text-sm transition-colors ${textSecondary} ${isDark ? 'hover:text-white' : 'hover:text-gray-900'}`}
+                                                                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
                                                                 >
                                                                     {item}
                                                                 </motion.a>
@@ -416,26 +530,54 @@ const Header = () => {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className={`fixed left-0 top-0 z-50 h-full w-[85%] max-w-sm overflow-y-auto shadow-2xl md:hidden ${bgPrimary}`}
+                            className="fixed left-0 top-0 z-50 h-full w-[85%] max-w-sm overflow-y-auto bg-white shadow-2xl md:hidden"
                         >
                             {/* Header */}
-                            <div className={`sticky top-0 z-10 ${border} ${bgPrimary} border-b p-4 shadow-sm`}>
+                            <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-4 shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <img src={Logo} alt="Cylore" className="h-10 w-20 object-contain" />
                                     <div className="flex items-center space-x-2">
+                                        {/* AI Button in Sidebar */}
                                         <motion.button
-                                            whileHover={{ scale: 1.1, rotate: 360 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={() => setIsDark(!isDark)}
-                                            className={`rounded-lg p-2 ${isDark ? 'bg-slate-700 text-yellow-400' : 'bg-gray-100 text-gray-700'}`}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => {
+                                                setIsAIModalOpen(true);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className="relative overflow-hidden rounded-full px-3 py-2 font-bold text-white shadow-lg"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                            }}
                                         >
-                                            {isDark ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+                                            <motion.div
+                                                className="absolute inset-0"
+                                                animate={{
+                                                    background: [
+                                                        'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                                        'linear-gradient(135deg, #f093fb 0%, #667eea 50%, #764ba2 100%)',
+                                                        'linear-gradient(135deg, #764ba2 0%, #f093fb 50%, #667eea 100%)',
+                                                        'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                                                    ],
+                                                }}
+                                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                                            />
+
+                                            <motion.div
+                                                className="relative flex items-center space-x-1"
+                                                animate={{ y: [0, -2, 0] }}
+                                                transition={{ duration: 2, repeat: Infinity }}
+                                            >
+                                                <HiSparkles className="text-base" />
+                                                <span className="text-xs font-bold">AI</span>
+                                            </motion.div>
                                         </motion.button>
+
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setIsMenuOpen(false)}
-                                            className={`rounded-lg p-2 ${hoverBg} ${textPrimary}`}
+                                            className="rounded-lg p-2 text-gray-900 hover:bg-gray-100"
                                         >
                                             <IoMdClose className="text-xl" />
                                         </motion.button>
@@ -448,16 +590,16 @@ const Header = () => {
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className={`mx-4 mt-4 rounded-lg ${border} ${bgSecondary} border p-4 shadow-sm`}
+                                className="mx-4 mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm"
                             >
                                 <div className="flex items-center space-x-3">
-                                    <div className={`h-12 w-12 overflow-hidden rounded-full ${border} border-2`}>
+                                    <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-gray-200">
                                         <img src={Logo} alt="Profile" className="h-full w-full object-cover" />
                                     </div>
                                     <div className="flex-1">
-                                        <p className={`text-sm font-semibold ${textPrimary}`}>Md Sabbir</p>
-                                        <p className={`text-xs ${textSecondary}`}>sabbir@example.com</p>
-                                        <Link href="/login" className={`mt-1 inline-block text-xs font-medium ${textPrimary}`}>
+                                        <p className="text-sm font-semibold text-gray-900">Md Sabbir</p>
+                                        <p className="text-xs text-gray-600">sabbir@example.com</p>
+                                        <Link href="/login" className="mt-1 inline-block text-xs font-medium text-gray-900">
                                             View Profile →
                                         </Link>
                                     </div>
@@ -475,9 +617,9 @@ const Header = () => {
                                     <input
                                         type="text"
                                         placeholder="Search products..."
-                                        className={`w-full rounded-lg ${border} ${bgSecondary} border py-2.5 pl-4 pr-12 text-sm outline-none transition-all ${textPrimary} ${isDark ? 'focus:bg-slate-700' : 'focus:bg-white'}`}
+                                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-12 text-sm text-gray-900 outline-none transition-all focus:bg-white"
                                     />
-                                    <IoIosSearch className={`absolute right-4 top-1/2 -translate-y-1/2 text-xl ${textSecondary}`} />
+                                    <IoIosSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-600" />
                                 </div>
                             </motion.div>
 
@@ -493,9 +635,9 @@ const Header = () => {
                                     { label: 'Cart', count: 2 },
                                     { label: 'Orders', count: 5 }
                                 ].map((stat) => (
-                                    <div key={stat.label} className={`rounded-lg ${border} ${bgSecondary} border p-3 text-center shadow-sm`}>
-                                        <p className={`text-lg font-bold ${textPrimary}`}>{stat.count}</p>
-                                        <p className={`text-[10px] font-medium ${textSecondary}`}>{stat.label}</p>
+                                    <div key={stat.label} className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-center shadow-sm">
+                                        <p className="text-lg font-bold text-gray-900">{stat.count}</p>
+                                        <p className="text-[10px] font-medium text-gray-600">{stat.label}</p>
                                     </div>
                                 ))}
                             </motion.div>
@@ -513,7 +655,7 @@ const Header = () => {
                                         <motion.button
                                             whileHover={{ scale: 1.01 }}
                                             whileTap={{ scale: 0.99 }}
-                                            className={`flex w-full items-center justify-between rounded-lg ${border} ${bgSecondary} border p-3.5 font-semibold shadow-sm transition-all ${textPrimary}`}
+                                            className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3.5 font-semibold text-gray-900 shadow-sm transition-all"
                                             onClick={() => toggleFilter(section.title)}
                                         >
                                             <span className="text-sm uppercase tracking-wide">{section.title}</span>
@@ -521,7 +663,7 @@ const Header = () => {
                                                 animate={{ rotate: openFilters[section.title] ? 180 : 0 }}
                                                 transition={{ duration: 0.3 }}
                                             >
-                                                <MdKeyboardArrowDown className={`text-xl ${textSecondary}`} />
+                                                <MdKeyboardArrowDown className="text-xl text-gray-600" />
                                             </motion.div>
                                         </motion.button>
                                         <AnimatePresence>
@@ -533,7 +675,7 @@ const Header = () => {
                                                     transition={{ duration: 0.3 }}
                                                     className="overflow-hidden"
                                                 >
-                                                    <div className={`mt-2 space-y-1 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-white'} p-3 shadow-inner`}>
+                                                    <div className="mt-2 space-y-1 rounded-lg bg-white p-3 shadow-inner">
                                                         {section.items.map((item, itemIdx) => (
                                                             <motion.a
                                                                 key={item}
@@ -542,9 +684,9 @@ const Header = () => {
                                                                 animate={{ opacity: 1, x: 0 }}
                                                                 transition={{ delay: itemIdx * 0.03 }}
                                                                 whileHover={{ x: 4 }}
-                                                                className={`flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-all ${textSecondary} ${hoverBg}`}
+                                                                className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-100"
                                                             >
-                                                                <div className={`h-1.5 w-1.5 rounded-full ${isDark ? 'bg-slate-500' : 'bg-gray-400'}`} />
+                                                                <div className="h-1.5 w-1.5 rounded-full bg-gray-400" />
                                                                 <span>{item}</span>
                                                             </motion.a>
                                                         ))}
@@ -557,7 +699,7 @@ const Header = () => {
                             </div>
 
                             {/* Footer */}
-                            <div className={`sticky bottom-0 ${border} ${bgPrimary} border-t p-4`}>
+                            <div className="sticky bottom-0 border-t border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex justify-center space-x-3">
                                     {['F', 'T', 'I', 'Y'].map((social) => (
                                         <motion.a
@@ -565,14 +707,14 @@ const Header = () => {
                                             href="#"
                                             whileHover={{ scale: 1.05, y: -2 }}
                                             whileTap={{ scale: 0.95 }}
-                                            className={`flex h-9 w-9 items-center justify-center rounded-full ${border} ${bgSecondary} border text-xs font-semibold transition-all ${textPrimary}`}
+                                            className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-xs font-semibold text-gray-900 transition-all"
                                         >
                                             {social}
                                         </motion.a>
                                     ))}
                                 </div>
-                                <p className={`text-center text-xs font-medium ${textPrimary}`}>Copyright ©2025 Cylore</p>
-                                <p className={`text-center text-xs ${textSecondary}`}>All Rights Reserved</p>
+                                <p className="text-center text-xs font-medium text-gray-900">Copyright ©2025 Cylore</p>
+                                <p className="text-center text-xs text-gray-600">All Rights Reserved</p>
                             </div>
                         </motion.div>
                     </>
@@ -580,7 +722,7 @@ const Header = () => {
             </AnimatePresence>
 
             {/* Bottom Nav */}
-            <div className={`fixed bottom-0 left-0 right-0 z-30 ${border} ${bgPrimary} border-t pb-safe shadow-lg md:hidden`}>
+            <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white pb-safe shadow-lg md:hidden">
                 <div className="grid grid-cols-4">
                     {[
                         { icon: MdHomeFilled, label: 'Home' },
@@ -595,20 +737,23 @@ const Header = () => {
                             className="relative flex flex-col items-center justify-center py-2"
                         >
                             <div className="relative">
-                                <item.icon className={`text-2xl ${textPrimary}`} />
+                                <item.icon className="text-2xl text-gray-900" />
                                 {item.badge && (
                                     <span className="absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-semibold text-white">
                                         {item.badge}
                                     </span>
                                 )}
                             </div>
-                            <span className={`mt-1 text-[11px] font-medium ${textSecondary}`}>{item.label}</span>
+                            <span className="mt-1 text-[11px] font-medium text-gray-600">{item.label}</span>
                         </motion.a>
                     ))}
                 </div>
             </div>
 
             <div className="h-16 md:hidden" />
+
+            {/* AI Try-On Modal */}
+            <AITryOnModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
         </>
     );
 };
