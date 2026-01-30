@@ -23,6 +23,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    // Register User
     public function show()
     {
         return Inertia::render('frontend/Register');
@@ -57,6 +58,9 @@ class AuthController extends Controller
         $user->email_otp_expires_at = Carbon::now()->addMinutes(5);
         $user->save();
 
+         // store email in session
+        session(['otp_email' => $user->email]);
+
         Mail::to($user->email)->send(new OtpMail($otp));
 
         return response()->json([
@@ -69,12 +73,64 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // otp verify
+
     public function otpVerifyForm()
     {
         return Inertia::render('frontend/OtpVerify');
     }
 
-    public function otpVerify(Request $request){}
+public function otpVerify(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'otp' => 'required|string|size:6',
+    ]);
+
+    if ($validator->fails()) {
+        // Inertia expects 422 for validation
+        return response()->json([
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $email = session('otp_email');
+
+    if (!$email) {
+        return response()->json([
+            'errors' => ['otp' => ['Please register again.']],
+        ], 422);
+    }
+
+    $user = User::where('email', $email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'errors' => ['otp' => ['User not found']],
+        ], 422);
+    }
+
+    if ($user->email_otp !== $request->otp) {
+        return response()->json([
+            'errors' => ['otp' => ['Invalid OTP']],
+        ], 422);
+    }
+
+    // verify success
+    $user->email_verified_at = now();
+    $user->email_otp = null;
+    $user->save();
+
+    session()->forget('otp_email');
+
+    // Auto-login
+    Auth::login($user);
+
+    // ✅ Send JSON response to React with redirect info
+    return response()->json([
+        'success' => 'Email verified successfully',
+        'redirect' => route('dashboard'),
+    ]);
+}
     // Login User
     public function loginshow()
     {

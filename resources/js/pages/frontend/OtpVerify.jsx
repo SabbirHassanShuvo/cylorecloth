@@ -10,20 +10,19 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 
 const schema = Yup.object().shape({
-    email: Yup.string()
-        .email("Enter a valid email")
-        .required("Email is required"),
     otp: Yup.string()
-        .length(6, "OTP must be 6 characters")
+        .length(6, "OTP must be 6 digits")
         .required("OTP is required"),
 });
 
 const OtpVerify = () => {
     const [loading, setLoading] = useState(false);
+    const [otpValue, setOtpValue] = useState(["", "", "", "", "", ""]);
 
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm({
         resolver: yupResolver(schema),
@@ -31,12 +30,18 @@ const OtpVerify = () => {
     });
 
     const onSubmit = (data) => {
+        if (data.otp.length !== 6) {
+            toast.error("Please enter 6-digit OTP");
+            return;
+        }
+
         setLoading(true);
 
         router.post(route("otp.verify"), data, {
             preserveScroll: true,
             onSuccess: (page) => {
-                toast.success(page.props.flash?.success || "Email verified successfully");
+                toast.success(page.props.success || "Email verified successfully");
+                if (page.props?.redirect) router.visit(page.props.redirect);
             },
             onError: (errors) => {
                 Object.values(errors).forEach(err => toast.error(err));
@@ -70,48 +75,48 @@ const OtpVerify = () => {
                     <form onSubmit={handleSubmit(onSubmit)} noValidate>
                         {/* OTP Input Boxes */}
                         <div className="flex gap-2 justify-center mb-5">
-                            {[0, 1, 2, 3, 4, 5].map((index) => (
+                            {otpValue.map((digit, index) => (
                                 <input
                                     key={index}
                                     id={`otp-${index}`}
                                     type="text"
                                     maxLength={1}
-                                    className="w-11 h-11 sm:w-12 sm:h-12 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-colors duration-200"
-                                    onInput={(e) => {
-                                        const target = e.target;
-                                        const value = target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                                        target.value = value;
+                                    value={digit}
+                                    className="w-11 h-11 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg"
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                                        const newOtp = [...otpValue];
+                                        newOtp[index] = val;
+                                        setOtpValue(newOtp);
 
-                                        // Auto-focus next input
-                                        if (value && index < 5) {
+                                        const joinedOtp = newOtp.join("");
+                                        setValue("otp", joinedOtp, { shouldValidate: true });
+
+                                        if (val && index < 5) {
                                             document.getElementById(`otp-${index + 1}`).focus();
                                         }
                                     }}
                                     onKeyDown={(e) => {
-                                        // Handle backspace
-                                        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                                        if (e.key === "Backspace" && !otpValue[index] && index > 0) {
                                             document.getElementById(`otp-${index - 1}`).focus();
                                         }
                                     }}
                                     onPaste={(e) => {
                                         e.preventDefault();
-                                        const pasteData = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-
-                                        // Distribute pasted data across inputs
-                                        for (let i = 0; i < Math.min(pasteData.length, 6); i++) {
-                                            const input = document.getElementById(`otp-${i}`);
-                                            if (input) {
-                                                input.value = pasteData[i];
-                                            }
-                                        }
-
-                                        // Focus last filled or next empty input
-                                        const nextIndex = Math.min(pasteData.length, 5);
-                                        document.getElementById(`otp-${nextIndex}`).focus();
+                                        const pasteData = e.clipboardData
+                                            .getData("text")
+                                            .replace(/[^a-zA-Z0-9]/g, "")
+                                            .slice(0, 6); // শুধু প্রথম 6 অক্ষর নেবে
+                                        const newOtp = pasteData.split("");
+                                        while (newOtp.length < 6) newOtp.push(""); // খালি জায়গা পূরণ
+                                        setOtpValue(newOtp);
+                                        setValue("otp", pasteData, { shouldValidate: true });
                                     }}
                                 />
                             ))}
                         </div>
+
+                        <input type="hidden" {...register("otp")} />
 
                         {/* Error Message - Fixed height to prevent jumping */}
                         <div className="h-6 mb-4">
