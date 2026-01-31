@@ -8,6 +8,8 @@ import { route } from "ziggy-js";
 import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useVerifyOtpMutation } from "../../redux/api/authApi";
+// import { useNavigate } from "react-router-dom";
 
 const schema = Yup.object().shape({
     otp: Yup.string()
@@ -18,37 +20,28 @@ const schema = Yup.object().shape({
 const OtpVerify = () => {
     const [loading, setLoading] = useState(false);
     const [otpValue, setOtpValue] = useState(["", "", "", "", "", ""]);
+    const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+    // const navigate = useNavigate();
 
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        formState: { errors },
-    } = useForm({
+    const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
         mode: "onChange",
     });
 
-    const onSubmit = (data) => {
-        if (data.otp.length !== 6) {
-            toast.error("Please enter 6-digit OTP");
-            return;
+    const onSubmit = async (data) => {
+        try {
+            const res = await verifyOtp(data).unwrap();
+            toast.success(res.success || "Email verified successfully");
+            if (res.redirect) window.location.href = res.redirect; // <-- ekhane change
+        } catch (err) {
+            if (err?.data?.errors) {
+                err.data.errors.forEach(e => toast.error(e));
+            } else {
+                toast.error("Something went wrong");
+            }
         }
-
-        setLoading(true);
-
-        router.post(route("otp.verify"), data, {
-            preserveScroll: true,
-            onSuccess: (page) => {
-                toast.success(page.props.success || "Email verified successfully");
-                if (page.props?.redirect) router.visit(page.props.redirect);
-            },
-            onError: (errors) => {
-                Object.values(errors).forEach(err => toast.error(err));
-            },
-            onFinish: () => setLoading(false),
-        });
     };
+
 
     return (
         <>
@@ -106,9 +99,9 @@ const OtpVerify = () => {
                                         const pasteData = e.clipboardData
                                             .getData("text")
                                             .replace(/[^a-zA-Z0-9]/g, "")
-                                            .slice(0, 6); // শুধু প্রথম 6 অক্ষর নেবে
+                                            .slice(0, 6);
                                         const newOtp = pasteData.split("");
-                                        while (newOtp.length < 6) newOtp.push(""); // খালি জায়গা পূরণ
+                                        while (newOtp.length < 6) newOtp.push("");
                                         setOtpValue(newOtp);
                                         setValue("otp", pasteData, { shouldValidate: true });
                                     }}

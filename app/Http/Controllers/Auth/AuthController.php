@@ -125,7 +125,7 @@ public function otpVerify(Request $request)
     // Auto-login
     Auth::login($user);
 
-    // ✅ Send JSON response to React with redirect info
+    // Send JSON response to React with redirect info
     return response()->json([
         'success' => 'Email verified successfully',
         'redirect' => route('dashboard'),
